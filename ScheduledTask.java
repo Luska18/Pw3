@@ -1,8 +1,8 @@
 package br.com.etechas.tarefas.schedule;
 
-import br.com.etechas.tarefas.repository.TarefaRepository;
-import br.com.etechas.tarefas.enums.StatusEnum;
 import br.com.etechas.tarefas.entity.Tarefa;
+import br.com.etechas.tarefas.enums.StatusEnum;
+import br.com.etechas.tarefas.repository.TarefaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 @Service
-public class TarefaScheduled {
+public class ScheduledTask {
 
     @Autowired
     private TarefaRepository tarefaRepository;
@@ -49,32 +49,32 @@ public class TarefaScheduled {
     };
 
     @Scheduled(fixedRate = 60000)
-    public void createAutomaticTarefa() {
+    public void createAutomaticTask() {
         Random random = new Random();
         
-        Tarefa tarefa = new Tarefa();
+        Tarefa task = new Tarefa();
         
         // Seleciona aleatoriamente um título e descrição
         int index = random.nextInt(TASK_TITLES.length);
-        tarefa.setTitulo(TASK_TITLES[index]);
-        tarefa.setDescricao(TASK_DESCRIPTIONS[index]);
+        task.setTitulo(TASK_TITLES[index]);
+        task.setDescricao(TASK_DESCRIPTIONS[index]);
 
 
         // Define data de vencimento para a partir de hoje
-        tarefa.setDataLimite(LocalDate.now().plusDays(1)
+        task.setDataLimite(LocalDate.now().plusDays(1)
                                        .plusDays(random.nextInt(10)));
         
         // Define status como PENDING
-        tarefa.setStatus(StatusEnum.PENDING);
+        task.setStatus(StatusEnum.PENDING);
         
         // Define um responsável aleatório
-        tarefa.setResponsavel(RESPONSIBLES[random.nextInt(RESPONSIBLES.length)]);
+        task.setResponsavel(RESPONSIBLES[random.nextInt(RESPONSIBLES.length)]);
         
         // Salva a tarefa no banco
-        tarefaRepository.save(tarefa);
+        tarefaRepository.save(task);
         
-        System.out.println("Tarefa automática criada: " + tarefa.getTitulo() +
-                          " - Responsável: " + tarefa.getResponsavel() +
+        System.out.println("Tarefa automática criada: " + task.getTitulo() +
+                          " - Responsável: " + task.getResponsavel() +
                           " - Data: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
     }
 } 
