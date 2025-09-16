@@ -1,13 +1,15 @@
 package br.com.etechas.tarefas.service;
 
+import br.com.etechas.tarefas.dto.TarefaCreationDTO;
 import br.com.etechas.tarefas.dto.TarefaResponseDTO;
 import br.com.etechas.tarefas.entity.Tarefa;
+import br.com.etechas.tarefas.enums.StatusEnum;
 import br.com.etechas.tarefas.mapper.TarefaMapper;
 import br.com.etechas.tarefas.repository.TarefaRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -20,20 +22,29 @@ public class TarefaService {
     private TarefaMapper tarefaMapper;
 
     public List<TarefaResponseDTO> findAll(){
-
         return tarefaMapper.toResponseDTOList(repository.findAll());
     }
 
-    public boolean excuirPorId(Long id)
-    {
-        Tarefa tarefa = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Não foi possível econntrar a tarefa com o Id" + id));
 
-        if (!"PENDING".equalsIgnoreCase(String.valueOf((tarefa.getStatus()))))
-        {
-            throw new RuntimeException("Tarefa em progresso ou concluída");
+    public boolean deleteById(Long id){
+        var tarefa = repository.findById(id);
+        if(tarefa.isEmpty()){
+            return false;
         }
+        if (tarefa.get().isPending()) {
+            repository.deleteById(id);
+            return true;
+        }
+        throw new RuntimeException("Tarefa em progresso ou concluída");
+    }
 
-        repository.delete(tarefa);
-        return true;
+    public Tarefa postar(TarefaCreationDTO dto) {
+        if (dto.dataLimite().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Data limite não pode ser anterior a data atual");
+        }
+        Tarefa tarefa = tarefaMapper.toEntity(dto);
+        tarefa.setStatus(StatusEnum.PENDING);
+        return repository.save(tarefa);
     }
 }
+

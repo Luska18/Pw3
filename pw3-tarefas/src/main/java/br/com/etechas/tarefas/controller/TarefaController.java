@@ -1,10 +1,11 @@
 package br.com.etechas.tarefas.controller;
 
+import br.com.etechas.tarefas.dto.TarefaCreationDTO;
 import br.com.etechas.tarefas.dto.TarefaResponseDTO;
 import br.com.etechas.tarefas.entity.Tarefa;
 import br.com.etechas.tarefas.service.TarefaService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,22 +26,20 @@ public class TarefaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id)
-    {
-        try
-        {
-            boolean excluida = service.excuirPorId(id);
+    public ResponseEntity<Void> deletar(@PathVariable Long id){
+        if(service.deleteById(id)){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
-            if(excluida)
-            {
-                return ResponseEntity.noContent().build();
-            }else{
-                return ResponseEntity.notFound().build();
-            }
-        } catch (RuntimeException ex)
-        {
-            return ResponseEntity.notFound().build();
+    @PostMapping
+    public ResponseEntity<Tarefa> postar(@RequestBody TarefaCreationDTO body) {
+        try {
+            Tarefa tarefaCriada = service.postar(body);
+            return ResponseEntity.status(HttpStatus.CREATED).body(tarefaCriada);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().header("ERRO!", e.getMessage()).build();
         }
     }
-    
 }
